@@ -2,12 +2,15 @@
 
 Sparkleswap gas rebate router
 
-An open source contract for sparkleswap -- a gas rebate program for the Uniswap protocol (decentralized exchange of Ethereum tokens).
+A piggyback protocol designed to create a gas rebate for providing additional volume and liquidity on Uniswap. 🦄.
 
 - Website: [Sparkleswap.finance](https://sparkleswap.finance/)
 - Interface: [Sparkleswap Interface](https://app.sparkleswap.finance/#/swap)
 - Twitter: [@Sparklefinance](https://twitter.com/Sparklefinance)
 - Telegram: [Sparkleswap.finance](https://t.me/Sparkleswapfinance)
+
+## Abstract 
+
 
 
 ## Accessing the Sparkleswap Interface

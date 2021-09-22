@@ -26,7 +26,7 @@ IUniswapV2Factory public immutable _IUniswapV2Factory;
 
     
 uint256 private minBalanceForRebate = 100 * (10**18);
-uint256 private basePercent = 50;
+uint256 public basePercent = 50; 
 address public pairAddress;
 address public immutable WETH;
 
@@ -42,22 +42,43 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
  receive() external payable {}   
     
  function setBasePercent (uint256 _basePercent) external onlyOwner {
+     // for simplicity base percent 1 to 99 %
      basePercent = _basePercent;    
  }
+ 
+
+ function gettoken0Balance() public view returns (uint) {
+    uint token0Balance = _sparkleswap.balanceOf(address(_IUniswapV2Pair));
+ return token0Balance;
+  }
+
+ function gettoken1Balance() public view returns (uint) {
+    uint token1Balance = IERC20(address(WETH)).balanceOf(address(_IUniswapV2Pair));
+ return token1Balance;
+ }
   
-// SparkleSwap -> Uniswapv2Pair  - > (Token Price vs Gas fees ) 
-    
- function calculateRebate () internal view returns ( uint256 rebateRate){
-    uint256 tokenAPrice = _IUniswapV2Pair.price0CumulativeLast();
-    uint256 tokenBPrice = _IUniswapV2Pair.price1CumulativeLast();
-    uint256 currentPrice = tokenAPrice.div(tokenBPrice).mul(100);
-    uint256 x = tx.gasprice.mul(basePercent);
-    rebateRate = x.div(currentPrice);
+ function getcurrentPrice() public view returns (uint) {
+    uint A = gettoken0Balance();
+    uint B = gettoken1Balance();
+    uint currentPrice = B.mul(10**18).div(A);
+ return currentPrice;
+ }
+
+  
+ // SparkleSwap -> Uniswapv2Pair  - > (Token Price vs Gas fees ) 
+ function calculateRebate () internal view returns (uint256){
+    //uint256 tokenAPrice = _IUniswapV2Pair.price0CumulativeLast();
+    //uint256 tokenBPrice = _IUniswapV2Pair.price1CumulativeLast();
+    //uint256 token0Balance = _sparkleswap.balanceOf(address(_IUniswapV2Pair));
+    //uint256 token1Balance = IERC20(address(WETH)).balanceOf(address(_IUniswapV2Pair));
+    //uint256 currentPrice = token1Balance.div(token0Balance);
+    uint256 x = tx.gasprice.mul(basePercent).div(10**2);
+    uint256 rebateRate = x.div(getcurrentPrice());
  return rebateRate;
  }
     
-// SparkleSwap -> Uniswapv2Router02  - > (Liquidity) 
-    
+
+     // SparkleSwap -> Uniswapv2Router02  - > (Liquidity) 
      function addLiquidity(
         address tokenA,
         address tokenB,
