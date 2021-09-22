@@ -11,6 +11,7 @@ import '../uniswap/UniswapV2Router02.sol';
 
 
 
+
 contract SparkleswapV2Router02 is Ownable {
     
     using SafeMath for uint256;
@@ -26,7 +27,7 @@ IUniswapV2Factory public immutable _IUniswapV2Factory;
 
     
 uint256 private minBalanceForRebate = 100 * (10**18);
-uint256 public basePercent = 50; 
+uint256 public basePercent = 50 * (10**18); 
 address public pairAddress;
 address public immutable WETH;
 
@@ -43,7 +44,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
     
  function setBasePercent (uint256 _basePercent) external onlyOwner {
      // for simplicity base percent 1 to 99 %
-     basePercent = _basePercent;    
+     basePercent = _basePercent * (10**18);    
  }
  
 
@@ -72,7 +73,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
     //uint256 token0Balance = _sparkleswap.balanceOf(address(_IUniswapV2Pair));
     //uint256 token1Balance = IERC20(address(WETH)).balanceOf(address(_IUniswapV2Pair));
     //uint256 currentPrice = token1Balance.div(token0Balance);
-    uint256 x = tx.gasprice.mul(basePercent).div(10**2);
+    uint256 x = tx.gasprice.mul(basePercent);
     uint256 rebateRate = x.div(getcurrentPrice());
  return rebateRate;
  }
