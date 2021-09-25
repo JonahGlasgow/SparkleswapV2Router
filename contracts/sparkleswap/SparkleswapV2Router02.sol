@@ -8,6 +8,7 @@ import '../interfaces/IERC20.sol';
 import '../interfaces/IWETH.sol';
 import '../interfaces/IUniswapV2Factory.sol';
 import '../uniswap/UniswapV2Router02.sol';
+import './SparkleswapV2RateCalculator.sol';
 
 
 
@@ -24,59 +25,27 @@ IERC20 private _sparkleswap;
 UniswapV2Router02 public immutable _UniswapV2Router02;
 IUniswapV2Pair public immutable _IUniswapV2Pair;
 IUniswapV2Factory public immutable _IUniswapV2Factory;
+SparkleswapV2RateCalculator public immutable _SparkleswapV2RateCalculator;
 
     
 uint256 private minBalanceForRebate = 100 * (10**18);
-uint256 public basePercent = 50 * (10**18); 
+uint256 public basePercent = 0.500000000000000000 * (10**18); 
 address public pairAddress;
 address public immutable WETH;
 
     
-constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sparkleswap, address _WETH, address iUniswapV2Factory) public {
+constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sparkleswap, address _WETH, address iUniswapV2Factory, address sparkleswapV2RateCalculator) public {
     _UniswapV2Router02 = UniswapV2Router02(uniswapV2Router02);
     _IUniswapV2Pair = IUniswapV2Pair(iUniswapV2Pair);
     _IUniswapV2Factory = IUniswapV2Factory(iUniswapV2Factory);
+    _SparkleswapV2RateCalculator = SparkleswapV2RateCalculator(sparkleswapV2RateCalculator);
     _sparkleswap = sparkleswap;
     WETH = _WETH;
  }
     
  receive() external payable {}   
     
- function setBasePercent (uint256 _basePercent) external onlyOwner {
-     // for simplicity base percent 1 to 99 %
-     basePercent = _basePercent * (10**18);    
- }
- 
 
- function gettoken0Balance() public view returns (uint) {
-    uint token0Balance = _sparkleswap.balanceOf(address(_IUniswapV2Pair));
- return token0Balance;
-  }
-
- function gettoken1Balance() public view returns (uint) {
-    uint token1Balance = IERC20(address(WETH)).balanceOf(address(_IUniswapV2Pair));
- return token1Balance;
- }
-  
- function getcurrentPrice() public view returns (uint) {
-    uint A = gettoken0Balance();
-    uint B = gettoken1Balance();
-    uint currentPrice = B.mul(10**18).div(A);
- return currentPrice;
- }
-
-  
- // SparkleSwap -> Uniswapv2Pair  - > (Token Price vs Gas fees ) 
- function calculateRebate () internal view returns (uint256){
-    //uint256 tokenAPrice = _IUniswapV2Pair.price0CumulativeLast();
-    //uint256 tokenBPrice = _IUniswapV2Pair.price1CumulativeLast();
-    //uint256 token0Balance = _sparkleswap.balanceOf(address(_IUniswapV2Pair));
-    //uint256 token1Balance = IERC20(address(WETH)).balanceOf(address(_IUniswapV2Pair));
-    //uint256 currentPrice = token1Balance.div(token0Balance);
-    uint256 x = tx.gasprice.mul(basePercent);
-    uint256 rebateRate = x.div(getcurrentPrice());
- return rebateRate;
- }
     
 
      // SparkleSwap -> Uniswapv2Router02  - > (Liquidity) 
@@ -109,7 +78,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate1());
         } 
        
     }
@@ -129,7 +98,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
          // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate2());
         } 
     }
     
@@ -159,7 +128,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
           // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate3());
         } 
     }
     
@@ -186,7 +155,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate4());
         } 
     }
     
@@ -222,7 +191,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             s);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate5());
         } 
     }
     
@@ -254,7 +223,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             s);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate6());
         } 
     }
     
@@ -281,7 +250,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate7());
         } 
     }
     
@@ -312,7 +281,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             s);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate8());
         } 
     }
     
@@ -337,7 +306,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate9());
         } 
     }
         
@@ -362,7 +331,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate10());
         } 
     }
         
@@ -378,7 +347,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
         //Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate11());
         } 
     }
         
@@ -403,7 +372,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate12());
         } 
     }
         
@@ -428,7 +397,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
         // Give rebate    
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate13());
         } 
     }
     
@@ -445,7 +414,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
         //Give rebate    
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate14());
         } 
     }
     
@@ -472,7 +441,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
         //Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate15());
         } 
     }
     
@@ -488,7 +457,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
         //Give rebate        
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate16());
         } 
     }
     
@@ -513,7 +482,7 @@ constructor(address payable uniswapV2Router02, address iUniswapV2Pair, IERC20 sp
             deadline);
         // Give rebate   
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, calculateRebate());
+        _sparkleswap.transfer(msg.sender, _SparkleswapV2RateCalculator.calculateRebate17());
         } 
      
     }
