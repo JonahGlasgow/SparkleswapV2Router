@@ -6,7 +6,7 @@ import '../libraries/Address.sol';
 import '../libraries/Ownable.sol';
 
 import '../interfaces/IERC20.sol';
-import './SparkleswapV2Router02.sol';
+
 
 
 contract SparkleswapV2RateCalculator is Ownable  {
@@ -19,7 +19,7 @@ contract SparkleswapV2RateCalculator is Ownable  {
   address public immutable WETH;
 
 
-SparkleswapV2Router02 public immutable _SparkleswapV2Router02;
+
 IUniswapV2Pair public immutable _IUniswapV2Pair;
 
   
@@ -49,8 +49,7 @@ IUniswapV2Pair public immutable _IUniswapV2Pair;
   address public adminAddress;
   
   
-  constructor(address payable sparkleswapV2Router02, address iUniswapV2Pair, IERC20 sparkleswap, address _WETH) public {
-    _SparkleswapV2Router02 = SparkleswapV2Router02(sparkleswapV2Router02);
+  constructor(address iUniswapV2Pair, IERC20 sparkleswap, address _WETH) public {
     _IUniswapV2Pair = IUniswapV2Pair(iUniswapV2Pair);
     _sparkleswap = sparkleswap;
     WETH = _WETH;
