@@ -8,7 +8,8 @@ import '../interfaces/IERC20.sol';
 import '../interfaces/IWETH.sol';
 import '../interfaces/IUniswapV2Factory.sol';
 import '../uniswap/UniswapV2Router02.sol';
-import './SparkleSwapRewardsOracleV2.sol';
+import './SparkleswapIncentiveOracle.sol';
+
 
 
 
@@ -23,24 +24,59 @@ IERC20 private _sparkleswap;
     
 UniswapV2Router02 public immutable _UniswapV2Router02;
 IUniswapV2Factory public immutable _IUniswapV2Factory;
-SparkleSwapRewardsOracleV2 public immutable _SparkleSwapRewardsOracleV2;
+SparkleswapIncentiveOracle public immutable _SparkleswapIncentiveOracle;
+
     
 uint256 private minBalanceForRebate = 100 * (10**18);
-uint256 public basePercent = 50 * (10**18); 
 address public pairAddress;
+address public immutable WETH;
 
     
-constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUniswapV2Factory, address SparkleswapOracle) public {
+constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address _WETH, address iUniswapV2Factory, address sparkleswapOracle) public {
     _UniswapV2Router02 = UniswapV2Router02(uniswapV2Router02);
     _IUniswapV2Factory = IUniswapV2Factory(iUniswapV2Factory);
-    _SparkleSwapRewardsOracleV2 = SparkleSwapRewardsOracleV2(SparkleswapOracle);
+    _SparkleswapIncentiveOracle = SparkleswapIncentiveOracle(sparkleswapOracle);
     _sparkleswap = sparkleswap;
-
+    WETH = _WETH;
  }
     
  receive() external payable {}   
     
-
+     function updateMinBalanceForRebate (
+         uint256 _minBalanceForRebate) external onlyOwner returns (uint256 ) {
+            minBalanceForRebate = _minBalanceForRebate;
+            return minBalanceForRebate;
+         } 
+         
+     // Withdraw reward token
+     function withdrawRewardToken (
+        uint256 amount) public onlyOwner returns (uint256) {
+        address OwnerAddress = owner();  
+            if (OwnerAddress == msg.sender)    
+            IERC20(_sparkleswap).transfer(OwnerAddress, amount);
+         return amount;
+    }
+    
+      // withdraw random IERC20 token
+      // **Only call this function if the token is a trusted source**
+     function withdrawStuckToken (
+        uint256 amount) public onlyOwner returns (uint256) {
+        address OwnerAddress = owner();  
+            if (OwnerAddress == msg.sender)    
+            IERC20(_sparkleswap).transfer(OwnerAddress, amount);
+         return amount;
+    }
+    
+     // Withdraw stuck ETH
+     function withdrawStuckETH (
+        ) public onlyOwner returns (uint256) {
+        address OwnerAddress = owner();
+        uint256 amount = address(this).balance;
+            if (OwnerAddress == msg.sender)    
+          address(this).transfer(amount);
+         return amount;
+    }
+    
 
      // SparkleSwap -> Uniswapv2Router02  - > (Liquidity) 
      function addLiquidity(
@@ -72,7 +108,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateLP());
+        _sparkleswap.transfer(msg.sender, _SparkleswapIncentiveOracle.RLP());
         } 
        
     }
@@ -82,8 +118,14 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
         uint amountTokenMin,
         uint amountETHMin,
         address to,
-        uint deadline) external payable  {
-        _UniswapV2Router02.addLiquidityETH(
+        uint deadline) external payable{
+          // Sparkleswap permission         
+        require(IERC20(token).approve(address(this), amountTokenDesired), 'approve failed.');
+          // Sparkleswap transfer 
+        require(IERC20(token).transferFrom(msg.sender, address(this), amountTokenDesired), 'transferFrom failed.');
+          // Uniswap permission 
+        require(IERC20(token).approve(address(_UniswapV2Router02), amountTokenDesired), 'approve failed.');    
+        _UniswapV2Router02.addLiquidityETH{ value: msg.value }(
             token,
             amountTokenDesired,
             amountTokenMin,
@@ -92,7 +134,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
          // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateLP());
+        _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RLP());
         } 
     }
     
@@ -122,7 +164,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
           // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateLP());
+        _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RLP());
         } 
     }
     
@@ -149,11 +191,11 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateLP());
+        _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RLP());
         } 
     }
     
-    
+    /*
     function removeLiquidityWithPermit(
         address tokenA,
         address tokenB,
@@ -185,9 +227,10 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             s);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateLP());
+        _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RLP());
         } 
     }
+    
     
     
     function removeLiquidityETHWithPermit(
@@ -217,10 +260,11 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             s);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateLP());
+        _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RLP());
         } 
     }
     
+    */
     
     function removeLiquidityETHSupportingFeeOnTransferTokens(
         address token,
@@ -244,10 +288,12 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateLP());
+        _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RLP());
         } 
     }
     
+    
+    /*
     function removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(
         address token,
         uint liquidity,
@@ -275,9 +321,11 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             s);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateLP());
+        _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RLP());
         } 
     }
+    
+    */
     
     // SparkleSwap -> Uniswapv2Router02  - > (Swaps) 
     function swapExactTokensForTokens(
@@ -300,7 +348,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateTX());
+        _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RTX());
         } 
     }
         
@@ -325,7 +373,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateTX());
+        _sparkleswap.transfer(msg.sender, _SparkleswapIncentiveOracle.RTX());
         } 
     }
         
@@ -341,7 +389,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
         //Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateTX());
+        _sparkleswap.transfer(msg.sender, _SparkleswapIncentiveOracle.RTX());
         } 
     }
         
@@ -366,7 +414,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
         // Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateTX());
+        _sparkleswap.transfer(msg.sender, _SparkleswapIncentiveOracle.RTX());
         } 
     }
         
@@ -391,7 +439,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
         // Give rebate    
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateTX());
+        _sparkleswap.transfer(msg.sender, _SparkleswapIncentiveOracle.RTX());
         } 
     }
     
@@ -408,7 +456,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
         //Give rebate    
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateTX());
+        _sparkleswap.transfer(msg.sender, _SparkleswapIncentiveOracle.RTX());
         } 
     }
     
@@ -435,7 +483,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
         //Give rebate
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateTX());
+        _sparkleswap.transfer(msg.sender, _SparkleswapIncentiveOracle.RTX());
         } 
     }
     
@@ -451,7 +499,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
         //Give rebate        
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateTX());
+        _sparkleswap.transfer(msg.sender, _SparkleswapIncentiveOracle.RTX());
         } 
     }
     
@@ -476,7 +524,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address iUnis
             deadline);
         // Give rebate   
         if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender, _SparkleSwapRewardsOracleV2.getRebateTX());
+        _sparkleswap.transfer(msg.sender, _SparkleswapIncentiveOracle.RTX());
         } 
      
     }
