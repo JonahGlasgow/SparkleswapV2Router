@@ -60,10 +60,10 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address _WETH
       // withdraw random IERC20 token
       // **Only call this function if the token is a trusted source**
      function withdrawStuckToken (
-        uint256 amount) public onlyOwner returns (uint256) {
+        uint256 amount, address _tokenAddress) public onlyOwner returns (uint256) {
         address OwnerAddress = owner();  
             if (OwnerAddress == msg.sender)    
-            IERC20(_sparkleswap).transfer(OwnerAddress, amount);
+            IERC20(_tokenAddress).transfer(OwnerAddress, amount);
          return amount;
     }
     
@@ -195,7 +195,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address _WETH
         } 
     }
     
- 
+    
     function removeLiquidityETHSupportingFeeOnTransferTokens(
         address token,
         uint liquidity,
@@ -221,7 +221,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address _WETH
         _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RLP());
         } 
     }
-    
+
     
     // SparkleSwap -> Uniswapv2Router02  - > (Swaps) 
     function swapExactTokensForTokens(
