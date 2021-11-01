@@ -28,7 +28,6 @@ SparkleswapIncentiveOracle public immutable _SparkleswapIncentiveOracle;
 
     
 uint256 private minBalanceForRebate = 100 * (10**18);
-address public pairAddress;
 address public immutable WETH;
 
     
@@ -60,7 +59,8 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address _WETH
       // withdraw random IERC20 token
       // **Only call this function if the token is a trusted source**
      function withdrawStuckToken (
-        uint256 amount, address _tokenAddress) public onlyOwner returns (uint256) {
+        uint256 amount, 
+        address _tokenAddress) public onlyOwner returns (uint256) {
         address OwnerAddress = owner();  
             if (OwnerAddress == msg.sender)    
             IERC20(_tokenAddress).transfer(OwnerAddress, amount);
@@ -73,7 +73,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address _WETH
         address OwnerAddress = owner();
         uint256 amount = address(this).balance;
             if (OwnerAddress == msg.sender)    
-          address(this).transfer(amount);
+            msg.sender.transfer(amount);
          return amount;
     }
     
@@ -221,7 +221,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address _WETH
         _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RLP());
         } 
     }
-
+    
     
     // SparkleSwap -> Uniswapv2Router02  - > (Swaps) 
     function swapExactTokensForTokens(
