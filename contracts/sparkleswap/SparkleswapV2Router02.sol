@@ -195,77 +195,7 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address _WETH
         } 
     }
     
-    /*
-    function removeLiquidityWithPermit(
-        address tokenA,
-        address tokenB,
-        uint liquidity,
-        uint amountAMin,
-        uint amountBMin,
-        address to,
-        uint deadline,
-        bool approveMax, uint8 v, bytes32 r, bytes32 s) external  {
-         // Get Uniswap lp token address
-        address UNILP = _IUniswapV2Factory.getPair(tokenA, tokenB);
-        // Sparkleswap permission         
-        require(IERC20(UNILP).approve(address(this), liquidity), 'approve failed.');
-        // Sparkleswap transfer 
-        require(IERC20(UNILP).transferFrom(msg.sender, address(this), liquidity), 'transferFrom failed.');
-        // Uniswap permission 
-        require(IERC20(UNILP).approve(address(_UniswapV2Router02), liquidity), 'approve failed.');       
-        _UniswapV2Router02.removeLiquidityWithPermit(
-            tokenA,
-            tokenB,
-            liquidity,
-            amountAMin,
-            amountBMin,
-            to,
-            deadline,
-            approveMax, 
-            v, 
-            r, 
-            s);
-        // Give rebate
-        if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RLP());
-        } 
-    }
-    
-    
-    
-    function removeLiquidityETHWithPermit(
-        address token,
-        uint liquidity,
-        uint amountTokenMin,
-        uint amountETHMin,
-        address to,
-        uint deadline,
-        bool approveMax, uint8 v, bytes32 r, bytes32 s) external  {
-        // Sparkleswap permission         
-        require(IERC20(token).approve(address(this), liquidity), 'approve failed.');
-        // Sparkleswap transfer 
-        require(IERC20(token).transferFrom(msg.sender, address(this), liquidity), 'transferFrom failed.');
-        // Uniswap permission 
-        require(IERC20(token).approve(address(_UniswapV2Router02), liquidity), 'approve failed.');    
-        _UniswapV2Router02.removeLiquidityETHWithPermit(
-            token,
-            liquidity,
-            amountTokenMin,
-            amountETHMin,
-            to,
-            deadline,
-            approveMax, 
-            v, 
-            r, 
-            s);
-        // Give rebate
-        if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RLP());
-        } 
-    }
-    
-    */
-    
+ 
     function removeLiquidityETHSupportingFeeOnTransferTokens(
         address token,
         uint liquidity,
@@ -292,40 +222,6 @@ constructor(address payable uniswapV2Router02, IERC20 sparkleswap, address _WETH
         } 
     }
     
-    
-    /*
-    function removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(
-        address token,
-        uint liquidity,
-        uint amountTokenMin,
-        uint amountETHMin,
-        address to,
-        uint deadline,
-        bool approveMax, uint8 v, bytes32 r, bytes32 s) external {
-        // Sparkleswap permission         
-        require(IERC20(token).approve(address(this), liquidity), 'approve failed.');
-        // Sparkleswap transfer 
-        require(IERC20(token).transferFrom(msg.sender, address(this), liquidity), 'transferFrom failed.');
-        // Uniswap permission 
-        require(IERC20(token).approve(address(_UniswapV2Router02), liquidity), 'approve failed.');
-        _UniswapV2Router02.removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(
-            token,
-            liquidity,
-            amountTokenMin,
-            amountETHMin,
-            to,
-            deadline,
-            approveMax, 
-            v, 
-            r, 
-            s);
-        // Give rebate
-        if (_sparkleswap.balanceOf(msg.sender) > minBalanceForRebate ) {
-        _sparkleswap.transfer(msg.sender,  _SparkleswapIncentiveOracle.RLP());
-        } 
-    }
-    
-    */
     
     // SparkleSwap -> Uniswapv2Router02  - > (Swaps) 
     function swapExactTokensForTokens(
